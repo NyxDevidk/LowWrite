@@ -1,0 +1,64 @@
+{
+  "name": "low-write",
+  "version": "1.0.0",
+  "description": "Assistente de escrita com Google Gemini",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev:react": "vite",
+    "dev:electron": "tsc -w -p electron/tsconfig.json",
+    "dev": "concurrently \"npm run dev:react\" \"npm run dev:electron\" \"wait-on tcp:5173 && electron .\"",
+    "build": "tsc && vite build && tsc -p electron/tsconfig.json",
+    "dist": "npm run build && electron-builder --win",
+    "start": "electron ."
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "discord-rpc": "^4.0.1",
+    "electron-updater": "^6.8.3",
+    "lucide-react": "^0.577.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.2.2",
+    "@types/discord-rpc": "^4.0.10",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "concurrently": "^9.0.0",
+    "electron": "^41.0.3",
+    "electron-builder": "^25.1.8",
+    "tailwindcss": "^4.2.2",
+    "typescript": "^5.2.2",
+    "vite": "^5.2.0",
+    "wait-on": "^8.0.0"
+  },
+  "build": {
+    "appId": "com.lowwrite.app",
+    "productName": "Low Write",
+    "publish": {
+      "provider": "github",
+      "owner": "SEU-USUARIO-GITHUB",
+      "repo": "LowWrite"
+    },
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "build/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/LowWriteIco.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    }
+  }
+}
