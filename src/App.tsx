@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Sparkles, MessageSquare, Settings, Check, Send, Copy, Trash2, Edit3, Type, Zap, Bot, PaintBucket, Search, Folder, AppWindow, FileText, ChevronRight, ExternalLink, Gamepad2, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { Sparkles, MessageSquare, Settings, Check, Send, Copy, Trash2, Edit3, Type, Zap, Bot, PaintBucket, Search, Folder, AppWindow, FileText, ChevronRight, ExternalLink, Gamepad2, CheckCircle2, XCircle, Loader2, Calculator } from 'lucide-react';
 
 // --- Types & Config ---
 type ChatMessage = {
@@ -111,6 +111,7 @@ const App: React.FC = () => {
   const [searchFilter, setSearchFilter] = useState<'all' | 'apps' | 'documents'>('apps');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Chat State
