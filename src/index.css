@@ -27,3 +27,37 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+@keyframes rgb-cycle {
+  0% { color: #ff0000; border-color: #ff0000; }
+  33% { color: #00ff00; border-color: #00ff00; }
+  66% { color: #0000ff; border-color: #0000ff; }
+  100% { color: #ff0000; border-color: #ff0000; }
+}
+
+@keyframes rgb-bg-cycle {
+  0% { background-color: rgba(255, 0, 0, 0.2); }
+  33% { background-color: rgba(0, 255, 0, 0.2); }
+  66% { background-color: rgba(0, 0, 255, 0.2); }
+  100% { background-color: rgba(255, 0, 0, 0.2); }
+}
+
+.animate-rgb {
+  animation: rgb-cycle 5s linear infinite;
+}
+
+.animate-rgb-bg {
+  animation: rgb-bg-cycle 5s linear infinite;
+}
+
+.animate-rgb-border {
+  animation: rgb-cycle 5s linear infinite;
+}
+
+/* Custom Theme Dynamic Utilities */
+.text-custom-theme { color: var(--custom-color); }
+.bg-custom-theme-light { background-color: color-mix(in srgb, var(--custom-color), transparent 80%); }
+.border-custom-theme-light { border-color: color-mix(in srgb, var(--custom-color), transparent 70%); }
+.bg-custom-theme-btn { background-color: color-mix(in srgb, var(--custom-color), transparent 40%); }
+.hover-custom-theme-btn:hover { background-color: color-mix(in srgb, var(--custom-color), transparent 20%); }
+.custom-theme-ring:focus { border-color: color-mix(in srgb, var(--custom-color), transparent 50%); box-shadow: 0 0 0 2px color-mix(in srgb, var(--custom-color), transparent 50%); }

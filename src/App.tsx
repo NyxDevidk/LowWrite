@@ -49,6 +49,7 @@ const themeOptions: ThemeConfig[] = [
   { id: 'rose', name: 'Rose', colorHex: '#f43f5e', text: 'text-rose-400', bgLight: 'bg-rose-500/20', border: 'border-rose-500/30', btn: 'bg-rose-600/60', btnHover: 'hover:bg-rose-600/80', gradient: 'from-rose-400 to-pink-400', ring: 'focus:border-rose-500/50 focus:ring-rose-500/50' },
   { id: 'amber', name: 'Amber', colorHex: '#f59e0b', text: 'text-amber-400', bgLight: 'bg-amber-500/20', border: 'border-amber-500/30', btn: 'bg-amber-600/60', btnHover: 'hover:bg-amber-600/80', gradient: 'from-amber-400 to-orange-400', ring: 'focus:border-amber-500/50 focus:ring-amber-500/50' },
   { id: 'zinc', name: 'Monochrome', colorHex: '#a1a1aa', text: 'text-zinc-300', bgLight: 'bg-zinc-500/20', border: 'border-zinc-500/30', btn: 'bg-zinc-600/60', btnHover: 'hover:bg-zinc-600/80', gradient: 'from-zinc-300 to-gray-400', ring: 'focus:border-zinc-500/50 focus:ring-zinc-500/50' },
+  { id: 'rgb', name: 'RGB Gaming', colorHex: '#ff0000', text: 'animate-rgb', bgLight: 'animate-rgb-bg whitespace-nowrap', border: 'animate-rgb-border', btn: 'bg-white/20', btnHover: 'hover:bg-white/30', gradient: 'from-red-500 via-green-500 to-blue-500', ring: 'focus:border-white/50' },
 ];
 
 const tones = ['Profissional', 'Casual', 'Acadêmico', 'Amigável', 'Criativo'];
@@ -97,6 +98,8 @@ const App: React.FC = () => {
     try { return JSON.parse(localStorage.getItem('refineHistory') || '[]'); } catch { return []; }
   });
   const [showHistory, setShowHistory] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<'appearance' | 'ai' | 'snippets' | 'system'>('appearance');
+  const [bgTransparency, setBgTransparency] = useState(() => Number(localStorage.getItem('bgTransparency') || '0.8'));
   
   // Custom Theme Generator
   const customThemeObj: ThemeConfig = {
@@ -177,6 +180,8 @@ const App: React.FC = () => {
   }, [activeTab, text, chatInput]);
 
   useEffect(() => localStorage.setItem('geminiApiKey', geminiApiKey), [geminiApiKey]);
+  useEffect(() => localStorage.setItem('bgTransparency', bgTransparency.toString()), [bgTransparency]);
+  useEffect(() => localStorage.setItem('appTheme', themeId), [themeId]);
   useEffect(() => localStorage.setItem('snippets', JSON.stringify(snippets)), [snippets]);
   useEffect(() => localStorage.setItem('refineHistory', JSON.stringify(refineHistory)), [refineHistory]);
 
@@ -359,8 +364,12 @@ const App: React.FC = () => {
 
       {/* App Container - Glassmorphism 2.0 */}
       <div 
-        className="w-full max-w-3xl bg-[#161618]/70 backdrop-blur-[40px] rounded-2xl border border-white/[0.08] shadow-2xl shadow-black/80 ring-1 ring-black/50 flex flex-col overflow-hidden relative transform transition-all duration-500 ease-in-out" 
-        style={{ WebkitAppRegion: 'drag' } as any}
+        className="w-full max-w-3xl rounded-2xl border border-white/[0.08] shadow-2xl shadow-black/80 ring-1 ring-black/50 flex flex-col overflow-hidden relative transform transition-all duration-500 ease-in-out" 
+        style={{ 
+          WebkitAppRegion: 'drag',
+          backgroundColor: `rgba(22, 22, 24, ${bgTransparency})`,
+          backdropBlur: '40px' 
+        } as any}
       >
         
         {/* Navigation Tabs */}
@@ -626,11 +635,22 @@ const App: React.FC = () => {
 
         {/* -------------------- SETTINGS TAB -------------------- */}
         {activeTab === 'settings' && (
-          <div className="px-6 py-6 flex flex-col gap-5 bg-black/20 h-[420px] overflow-y-auto animate-in fade-in zoom-in-95 duration-300" style={{ WebkitAppRegion: 'no-drag' } as any}>
+          <div className="flex flex-col h-[420px] animate-in fade-in zoom-in-95 duration-300" style={{ WebkitAppRegion: 'no-drag' } as any}>
             
-            {/* Theme & Temperature */}
-            <div className="flex gap-5">
-               {/* Visual Themes Card */}
+            {/* Settings Sub-Tabs */}
+            <div className="flex shrink-0 border-b border-white/[0.04] bg-black/20 px-4">
+                <button onClick={() => setSettingsTab('appearance')} className={`py-3 px-4 text-[10px] font-bold uppercase tracking-widest transition-all ${settingsTab === 'appearance' ? `${curTheme.text} border-b-2 border-current` : 'text-gray-500 hover:text-gray-300 border-b-2 border-transparent'}`}>Appearance</button>
+                <button onClick={() => setSettingsTab('ai')} className={`py-3 px-4 text-[10px] font-bold uppercase tracking-widest transition-all ${settingsTab === 'ai' ? `${curTheme.text} border-b-2 border-current` : 'text-gray-500 hover:text-gray-300 border-b-2 border-transparent'}`}>AI Config</button>
+                <button onClick={() => setSettingsTab('snippets')} className={`py-3 px-4 text-[10px] font-bold uppercase tracking-widest transition-all ${settingsTab === 'snippets' ? `${curTheme.text} border-b-2 border-current` : 'text-gray-500 hover:text-gray-300 border-b-2 border-transparent'}`}>Snippets</button>
+                <button onClick={() => setSettingsTab('system')} className={`py-3 px-4 text-[10px] font-bold uppercase tracking-widest transition-all ${settingsTab === 'system' ? `${curTheme.text} border-b-2 border-current` : 'text-gray-500 hover:text-gray-300 border-b-2 border-transparent'}`}>System</button>
+            </div>
+
+            <div className="px-6 py-6 flex flex-col gap-5 bg-black/10 flex-1 overflow-y-auto">
+            
+            {/* Appearance Section */}
+            {settingsTab === 'appearance' && (
+              <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-left-2 duration-300">
+                {/* Visual Themes Card */}
                <div className="flex-1 flex flex-col gap-3 p-5 bg-white/5 rounded-2xl border border-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
                  <label className="text-[10px] text-gray-400 uppercase tracking-widest font-bold flex items-center gap-2">
                    <PaintBucket className="w-4 h-4 text-white opacity-80" strokeWidth={2} />
@@ -663,178 +683,204 @@ const App: React.FC = () => {
                  </div>
                </div>
 
-               {/* AI Temperature */}
-               <div className="flex-[0.8] flex flex-col gap-3 p-5 bg-white/5 rounded-2xl border border-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
-                 <label className="text-[10px] text-gray-400 flex justify-between uppercase tracking-widest font-bold items-center gap-2">
-                   Criatividade (Temp)
-                   <span className={`text-[10px] ${curTheme.text}`}>{aiTemp.toFixed(1)}</span>
-                 </label>
-                 <input 
-                   type="range" min="0" max="1" step="0.1" value={aiTemp} onChange={(e) => setAiTemp(Number(e.target.value))}
-                   className="w-full mt-2 accent-white opacity-80 hover:opacity-100 transition-opacity"
-                   title="0 = Focado/Exato | 1 = Criativo/Aleatório"
-                 />
-               </div>
-            </div>
-
-            
-            {/* Gemini API Key Configuration */}
-            <div className="flex flex-col gap-3 p-5 bg-white/5 rounded-2xl border border-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
-              <label className="text-[10px] text-gray-400 uppercase tracking-widest font-bold flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-emerald-400 opacity-80" strokeWidth={2} />
-                Google Gemini API Key
-              </label>
-              <div>
-                 <span className="text-[10px] font-bold text-gray-500 uppercase ml-1 mb-1 flex justify-between">Secret Key <a href="javascript:void(0)" onClick={()=>handleOpenFile('https://aistudio.google.com/app/apikey')} className="text-emerald-400 hover:text-emerald-300 hover:underline cursor-pointer lowercase" title="Get your free API Key at Google AI Studio">(get free key)</a></span>
-                 <input 
-                   type="password"
-                   className={`w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-[14px] text-white outline-none focus:border-emerald-500/50 transition-colors placeholder-gray-600 font-mono`}
-                   value={geminiApiKey} 
-                   onChange={(e)=>setGeminiApiKey(e.target.value.trim())} 
-                   placeholder="AIzaSy..." 
-                 />
-                 <p className="text-[10px] text-gray-500 mt-2 ml-1">Your key is stored locally on your machine and sent directly to Google. We do not track or save your keys.</p>
-                 {keyStatus !== 'idle' && (
-                   <div className={`mt-3 flex items-center gap-2 px-3 py-2 rounded-lg border text-[11px] font-medium transition-all ${
-                     keyStatus === 'checking' ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400' :
-                     keyStatus === 'valid' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
-                     'bg-red-500/10 border-red-500/20 text-red-400'
-                   }`}>
-                     {keyStatus === 'checking' && <Loader2 className="w-4 h-4 animate-spin" />}
-                     {keyStatus === 'valid' && <CheckCircle2 className="w-4 h-4" />}
-                     {keyStatus === 'invalid' && <XCircle className="w-4 h-4 shrink-0" />}
-                     <span className="truncate">
-                       {keyStatus === 'checking' && 'Verificando chave e conectando ao Google...'}
-                       {keyStatus === 'valid' && 'API Key Válida! Conectado com sucesso.'}
-                       {keyStatus === 'invalid' && `Erro: ${keyError}`}
-                     </span>
-                   </div>
-                 )}
-
+                {/* Background Transparency Card */}
+                <div className="flex flex-col gap-3 p-5 bg-white/5 rounded-2xl border border-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+                  <label className="text-[10px] text-gray-400 flex justify-between uppercase tracking-widest font-bold items-center gap-2">
+                    Background Transparency
+                    <span className={`text-[10px] ${curTheme.text}`}>{Math.round(bgTransparency * 100)}%</span>
+                  </label>
+                  <input 
+                    type="range" min="0.1" max="1" step="0.05" value={bgTransparency} onChange={(e) => setBgTransparency(Number(e.target.value))}
+                    className="w-full mt-2 accent-white opacity-80 hover:opacity-100 transition-opacity"
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Custom Instruction Box */}
-            <div className="flex flex-col gap-3 p-5 bg-white/5 rounded-2xl border border-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
-              <label className="text-[10px] text-gray-400 uppercase tracking-widest font-bold flex items-center gap-2">
-                <Zap className="w-4 h-4 text-white opacity-80" strokeWidth={2} />
-                System Instructions (AI Persona)
-              </label>
-              <textarea
-                className={`w-full bg-black/40 rounded-xl p-4 text-gray-200 border border-white/10 outline-none ${curTheme.ring} transition-all resize-none placeholder-gray-600 text-[14px] leading-relaxed`}
-                placeholder="E.g: Always be direct. Provide bullet points. Act like a senior developer..."
-                value={customInstruction}
-                onChange={(e) => setCustomInstruction(e.target.value)}
-                rows={2}
-              />
-            </div>
+            {/* AI Config Section */}
+            {settingsTab === 'ai' && (
+              <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-left-2 duration-300">
+                {/* AI Temperature */}
+                <div className="flex flex-col gap-3 p-5 bg-white/5 rounded-2xl border border-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+                  <label className="text-[10px] text-gray-400 flex justify-between uppercase tracking-widest font-bold items-center gap-2">
+                    Criatividade (Temp)
+                    <span className={`text-[10px] ${curTheme.text}`}>{aiTemp.toFixed(1)}</span>
+                  </label>
+                  <input 
+                    type="range" min="0" max="1" step="0.1" value={aiTemp} onChange={(e) => setAiTemp(Number(e.target.value))}
+                    className="w-full mt-2 accent-white opacity-80 hover:opacity-100 transition-opacity"
+                    title="0 = Focado/Exato | 1 = Criativo/Aleatório"
+                  />
+                </div>
+
+                {/* Gemini API Key Configuration */}
+                <div className="flex flex-col gap-3 p-5 bg-white/5 rounded-2xl border border-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+                  <label className="text-[10px] text-gray-400 uppercase tracking-widest font-bold flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-emerald-400 opacity-80" strokeWidth={2} />
+                    Google Gemini API Key
+                  </label>
+                  <div>
+                    <span className="text-[10px] font-bold text-gray-500 uppercase ml-1 mb-1 flex justify-between">Secret Key <a href="javascript:void(0)" onClick={()=>handleOpenFile('https://aistudio.google.com/app/apikey')} className="text-emerald-400 hover:text-emerald-300 hover:underline cursor-pointer lowercase" title="Get your free API Key at Google AI Studio">(get free key)</a></span>
+                    <input 
+                      type="password"
+                      className={`w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-[14px] text-white outline-none focus:border-emerald-500/50 transition-colors placeholder-gray-600 font-mono`}
+                      value={geminiApiKey} 
+                      onChange={(e)=>setGeminiApiKey(e.target.value.trim())} 
+                      placeholder="AIzaSy..." 
+                    />
+                    <p className="text-[10px] text-gray-500 mt-2 ml-1">Your key is stored locally on your machine and sent directly to Google. We do not track or save your keys.</p>
+                    {keyStatus !== 'idle' && (
+                      <div className={`mt-3 flex items-center gap-2 px-3 py-2 rounded-lg border text-[11px] font-medium transition-all ${
+                        keyStatus === 'checking' ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400' :
+                        keyStatus === 'valid' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
+                        'bg-red-500/10 border-red-500/20 text-red-400'
+                      }`}>
+                        {keyStatus === 'checking' && <Loader2 className="w-4 h-4 animate-spin" />}
+                        {keyStatus === 'valid' && <CheckCircle2 className="w-4 h-4" />}
+                        {keyStatus === 'invalid' && <XCircle className="w-4 h-4 shrink-0" />}
+                        <span className="truncate">
+                          {keyStatus === 'checking' && 'Verificando chave e conectando ao Google...'}
+                          {keyStatus === 'valid' && 'API Key Válida! Conectado com sucesso.'}
+                          {keyStatus === 'invalid' && `Erro: ${keyError}`}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Custom Instruction Box */}
+                <div className="flex flex-col gap-3 p-5 bg-white/5 rounded-2xl border border-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+                  <label className="text-[10px] text-gray-400 uppercase tracking-widest font-bold flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-white opacity-80" strokeWidth={2} />
+                    System Instructions (AI Persona)
+                  </label>
+                  <textarea
+                    className={`w-full bg-black/40 rounded-xl p-4 text-gray-200 border border-white/10 outline-none ${curTheme.ring} transition-all resize-none placeholder-gray-600 text-[14px] leading-relaxed`}
+                    placeholder="E.g: Always be direct. Provide bullet points. Act like a senior developer..."
+                    value={customInstruction}
+                    onChange={(e) => setCustomInstruction(e.target.value)}
+                    rows={2}
+                  />
+                </div>
+              </div>
+            )}
 
             
             {/* Snippets Manager */}
-            <div className="flex flex-col gap-3 p-5 bg-white/5 rounded-2xl border border-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
-              <label className="text-[10px] text-gray-400 uppercase tracking-widest font-bold flex items-center gap-2">
-                <Type className="w-4 h-4 text-white opacity-80" strokeWidth={2} />
-                Snippets / Text Shortcuts
-              </label>
-              <p className="text-[10px] text-gray-500 -mt-1">Type a trigger (e.g. <code className="bg-white/10 px-1 rounded">/email</code>) in the Refine box and press Space to expand.</p>
-              <div className="flex flex-col gap-2 max-h-32 overflow-y-auto">
-                {snippets.map((s, i) => (
-                  <div key={i} className="flex items-center gap-2 bg-black/30 rounded-lg px-3 py-2">
-                    <code className={`text-[11px] font-mono ${curTheme.text} shrink-0`}>{s.trigger}</code>
-                    <span className="text-gray-500 text-xs shrink-0">→</span>
-                    <span className="text-gray-300 text-[11px] truncate flex-1">{s.expansion}</span>
-                    <button onClick={() => setSnippets(prev => prev.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-300 text-xs font-bold shrink-0">✕</button>
+            {settingsTab === 'snippets' && (
+              <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-left-2 duration-300">
+                <div className="flex flex-col gap-3 p-5 bg-white/5 rounded-2xl border border-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+                  <label className="text-[10px] text-gray-400 uppercase tracking-widest font-bold flex items-center gap-2">
+                    <Type className="w-4 h-4 text-white opacity-80" strokeWidth={2} />
+                    Snippets / Text Shortcuts
+                  </label>
+                  <p className="text-[10px] text-gray-500 -mt-1">Type a trigger (e.g. <code className="bg-white/10 px-1 rounded">/email</code>) in the Refine box and press Space to expand.</p>
+                  <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
+                    {snippets.map((s, i) => (
+                      <div key={i} className="flex items-center gap-2 bg-black/30 rounded-lg px-3 py-2">
+                        <code className={`text-[11px] font-mono ${curTheme.text} shrink-0`}>{s.trigger}</code>
+                        <span className="text-gray-500 text-xs shrink-0">→</span>
+                        <span className="text-gray-300 text-[11px] truncate flex-1">{s.expansion}</span>
+                        <button onClick={() => setSnippets(prev => prev.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-300 text-xs font-bold shrink-0">✕</button>
+                      </div>
+                    ))}
+                    {snippets.length === 0 && <p className="text-gray-600 text-[11px] ml-1">No snippets yet. Add one below!</p>}
                   </div>
-                ))}
-                {snippets.length === 0 && <p className="text-gray-600 text-[11px] ml-1">No snippets yet. Add one below!</p>}
-              </div>
-              <div className="flex gap-2 mt-1">
-                <input
-                  className="w-28 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[12px] font-mono text-white outline-none focus:border-white/30 transition-colors placeholder-gray-600"
-                  placeholder="/trigger"
-                  value={newSnippetTrigger}
-                  onChange={e => setNewSnippetTrigger(e.target.value)}
-                />
-                <input
-                  className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[12px] text-white outline-none focus:border-white/30 transition-colors placeholder-gray-600"
-                  placeholder="Expansion text..."
-                  value={newSnippetExpansion}
-                  onChange={e => setNewSnippetExpansion(e.target.value)}
-                />
-                <button
-                  onClick={() => {
-                    if (!newSnippetTrigger.trim() || !newSnippetExpansion.trim()) return;
-                    setSnippets(prev => [...prev, { trigger: newSnippetTrigger.trim(), expansion: newSnippetExpansion.trim() }]);
-                    setNewSnippetTrigger('');
-                    setNewSnippetExpansion('');
-                  }}
-                  className={`px-4 py-2 rounded-lg ${curTheme.btn} text-white text-xs font-bold hover:opacity-90 transition-all`}
-                >Add</button>
-              </div>
-            </div>
-
-            {/* Discord Rich Presence */}
-            <div className="flex flex-col gap-3 p-5 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] transition-all">
-              <div className="flex justify-between items-center cursor-pointer" onClick={() => setDiscordEnabled(!discordEnabled)}>
-                <label className="text-[10px] text-indigo-400 uppercase tracking-widest font-bold flex items-center gap-2 cursor-pointer">
-                  <Gamepad2 className="w-4 h-4 text-indigo-400 opacity-80" strokeWidth={2} />
-                  Discord Rich Presence
-                </label>
-                <div className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${discordEnabled ? 'bg-indigo-500' : 'bg-black/50 border border-white/10'}`}>
-                   <span className={`inline-block h-3 w-3 transform rounded-full transition-transform ${discordEnabled ? 'translate-x-5 bg-white shadow-md' : 'translate-x-1 bg-gray-500'}`} />
-                </div>
-              </div>
-              
-              {discordEnabled && (
-                <div className="flex flex-col gap-3 mt-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="flex gap-3">
-                     <div className="flex-1">
-                        <span className="text-[10px] font-bold text-gray-500 uppercase ml-1 mb-1 block">Details (Line 1)</span>
-                        <input className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[12px] text-white outline-none focus:border-indigo-500/50 transition-colors placeholder-gray-600" value={discordDetails} onChange={(e)=>setDiscordDetails(e.target.value)} placeholder="E.g. Writing an Epic Novel" />
-                     </div>
-                     <div className="flex-1">
-                        <span className="text-[10px] font-bold text-gray-500 uppercase ml-1 mb-1 block">State (Line 2)</span>
-                        <input className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[12px] text-white outline-none focus:border-indigo-500/50 transition-colors placeholder-gray-600" value={discordState} onChange={(e)=>setDiscordState(e.target.value)} placeholder="E.g. Editing Chapter 4" />
-                     </div>
-                  </div>
-                  <div>
-                     <span className="text-[10px] font-bold text-gray-500 uppercase ml-1 mb-1 flex justify-between">Application Client ID <a href="javascript:void(0)" onClick={()=>handleOpenFile('https://discord.com/developers/applications')} className="text-indigo-400 hover:text-indigo-300 hover:underline cursor-pointer lowercase" title="Create your own app ID on Discord Developer Portal to add custom images">(create one)</a></span>
-                     <input className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[12px] font-mono text-gray-300 outline-none focus:border-indigo-500/50 transition-colors placeholder-gray-600" value={discordClientId} onChange={(e)=>setDiscordClientId(e.target.value.replace(/\D/g, ''))} placeholder="Client ID (e.g. 1234567890)" />
+                  <div className="flex gap-2 mt-1">
+                    <input
+                      className="w-28 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[12px] font-mono text-white outline-none focus:border-white/30 transition-colors placeholder-gray-600"
+                      placeholder="/trigger"
+                      value={newSnippetTrigger}
+                      onChange={e => setNewSnippetTrigger(e.target.value)}
+                    />
+                    <input
+                      className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[12px] text-white outline-none focus:border-white/30 transition-colors placeholder-gray-600"
+                      placeholder="Expansion text..."
+                      value={newSnippetExpansion}
+                      onChange={e => setNewSnippetExpansion(e.target.value)}
+                    />
+                    <button
+                      onClick={() => {
+                        if (!newSnippetTrigger.trim() || !newSnippetExpansion.trim()) return;
+                        setSnippets(prev => [...prev, { trigger: newSnippetTrigger.trim(), expansion: newSnippetExpansion.trim() }]);
+                        setNewSnippetTrigger('');
+                        setNewSnippetExpansion('');
+                      }}
+                      className={`px-4 py-2 rounded-lg ${curTheme.btn} text-white text-xs font-bold hover:opacity-90 transition-all`}
+                    >Add</button>
                   </div>
                 </div>
-              )}
-            </div>
-            
-            {/* About & Updates */}
-            <div className={`flex items-center justify-between p-5 bg-white/5 rounded-2xl border ${curTheme.border} shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]`}>
-               <div className="flex items-center gap-4">
-                  <div className={`p-2.5 rounded-xl ${curTheme.bgLight}`}>
-                     <Zap className={`w-5 h-5 ${curTheme.text}`} strokeWidth={2} />
-                  </div>
-                  <div>
-                     <div className="text-white text-sm font-bold">Low Write</div>
-                     <div className="text-gray-400 text-[11px]">Version {appVersion || '1.1.0'}</div>
-                  </div>
-               </div>
-               <button
-                  onClick={() => window.electron?.checkForUpdates?.()}
-                  className={`px-4 py-2 rounded-xl ${curTheme.bgLight} border ${curTheme.border} ${curTheme.text} hover:opacity-80 transition-all text-xs font-bold tracking-wide`}
-               >
-                  Check for Updates
-               </button>
-            </div>
+              </div>
+            )}
 
-            {/* System Actions */}
-            <div className="flex items-center justify-between p-5 bg-white/5 rounded-2xl border border-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
-               <div className="flex flex-col">
-                  <span className="text-sm font-bold text-white mb-0.5">Start with Windows</span>
-                  <span className="text-[11px] text-gray-400">Launch Low Write automatically in the background when you log in.</span>
-               </div>
-               <button onClick={toggleAutoLaunch} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${autoLaunch ? curTheme.bgLight : 'bg-black/50 border border-white/10'}`}>
-                  <span className={`inline-block h-4 w-4 transform rounded-full transition-transform ${autoLaunch ? 'translate-x-6 bg-white shadow-[0_0_10px_white]' : 'translate-x-1 bg-gray-500'}`} />
-               </button>
-            </div>
+            {/* System Section */}
+            {settingsTab === 'system' && (
+              <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-left-2 duration-300">
+                {/* Discord Rich Presence */}
+                <div className="flex flex-col gap-3 p-5 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] transition-all">
+                  <div className="flex justify-between items-center cursor-pointer" onClick={() => setDiscordEnabled(!discordEnabled)}>
+                    <label className="text-[10px] text-indigo-400 uppercase tracking-widest font-bold flex items-center gap-2 cursor-pointer">
+                      <Gamepad2 className="w-4 h-4 text-indigo-400 opacity-80" strokeWidth={2} />
+                      Discord Rich Presence
+                    </label>
+                    <div className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${discordEnabled ? 'bg-indigo-500' : 'bg-black/50 border border-white/10'}`}>
+                       <span className={`inline-block h-3 w-3 transform rounded-full transition-transform ${discordEnabled ? 'translate-x-5 bg-white shadow-md' : 'translate-x-1 bg-gray-500'}`} />
+                    </div>
+                  </div>
+                  
+                  {discordEnabled && (
+                    <div className="flex flex-col gap-3 mt-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="flex gap-3">
+                         <div className="flex-1">
+                            <span className="text-[10px] font-bold text-gray-500 uppercase ml-1 mb-1 block">Details (Line 1)</span>
+                            <input className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[12px] text-white outline-none focus:border-indigo-500/50 transition-colors placeholder-gray-600" value={discordDetails} onChange={(e)=>setDiscordDetails(e.target.value)} placeholder="E.g. Writing an Epic Novel" />
+                         </div>
+                         <div className="flex-1">
+                            <span className="text-[10px] font-bold text-gray-500 uppercase ml-1 mb-1 block">State (Line 2)</span>
+                            <input className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[12px] text-white outline-none focus:border-indigo-500/50 transition-colors placeholder-gray-600" value={discordState} onChange={(e)=>setDiscordState(e.target.value)} placeholder="E.g. Editing Chapter 4" />
+                         </div>
+                      </div>
+                      <div>
+                         <span className="text-[10px] font-bold text-gray-500 uppercase ml-1 mb-1 flex justify-between">Application Client ID <a href="javascript:void(0)" onClick={()=>handleOpenFile('https://discord.com/developers/applications')} className="text-indigo-400 hover:text-indigo-300 hover:underline cursor-pointer lowercase" title="Create your own app ID on Discord Developer Portal to add custom images">(create one)</a></span>
+                         <input className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[12px] font-mono text-gray-300 outline-none focus:border-indigo-500/50 transition-colors placeholder-gray-600" value={discordClientId} onChange={(e)=>setDiscordClientId(e.target.value.replace(/\D/g, ''))} placeholder="Client ID (e.g. 1234567890)" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* About & Updates */}
+                <div className={`flex items-center justify-between p-5 bg-white/5 rounded-2xl border ${curTheme.border} shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]`}>
+                   <div className="flex items-center gap-4">
+                      <div className={`p-2.5 rounded-xl ${curTheme.bgLight}`}>
+                         <Zap className={`w-5 h-5 ${curTheme.text}`} strokeWidth={2} />
+                      </div>
+                      <div>
+                         <div className="text-white text-sm font-bold">Low Write</div>
+                         <div className="text-gray-400 text-[11px]">Version {appVersion || '1.3.0'}</div>
+                      </div>
+                   </div>
+                   <button
+                      onClick={() => window.electron?.checkForUpdates?.()}
+                      className={`px-4 py-2 rounded-xl ${curTheme.bgLight} border ${curTheme.border} ${curTheme.text} hover:opacity-80 transition-all text-xs font-bold tracking-wide`}
+                   >
+                      Check for Updates
+                   </button>
+                </div>
+
+                {/* System Actions */}
+                <div className="flex items-center justify-between p-5 bg-white/5 rounded-2xl border border-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+                   <div className="flex flex-col">
+                      <span className="text-sm font-bold text-white mb-0.5">Start with Windows</span>
+                      <span className="text-[11px] text-gray-400">Launch Low Write automatically in the background when you log in.</span>
+                   </div>
+                   <button onClick={toggleAutoLaunch} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${autoLaunch ? curTheme.bgLight : 'bg-black/50 border border-white/10'}`}>
+                      <span className={`inline-block h-4 w-4 transform rounded-full transition-transform ${autoLaunch ? 'translate-x-6 bg-white shadow-[0_0_10px_white]' : 'translate-x-1 bg-gray-500'}`} />
+                   </button>
+                </div>
+              </div>
+            )}
             
+            </div>
           </div>
         )}
 
