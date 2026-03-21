@@ -349,7 +349,6 @@ ipcMain.handle('set-discord-rpc', async (event, { clientId, details, state, enab
   }
 });
 
-\n
 // IPC App Version & Manual Updates
 ipcMain.handle('get-app-version', () => app.getVersion());
 ipcMain.handle('invoke-check-updates', () => {
