@@ -18,4 +18,5 @@ contextBridge.exposeInMainWorld('electron', {
   setDiscordRPC: (options: any) => ipcRenderer.invoke('set-discord-rpc', options),
   execSystemCommand: (command: string) => ipcRenderer.invoke('exec-system-command', command),
   setWindowPosition: (position: string) => ipcRenderer.invoke('set-window-position', position),
+  setWindowSize: (width: number, height: number) => ipcRenderer.invoke('set-window-size', width, height),
 });

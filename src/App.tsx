@@ -28,6 +28,7 @@ declare global {
       setDiscordRPC: (options: any) => Promise<boolean>;
       execSystemCommand: (command: string) => Promise<boolean>;
       setWindowPosition: (position: string) => Promise<void>;
+      setWindowSize: (width: number, height: number) => Promise<void>;
     };
   }
 }
@@ -190,6 +191,22 @@ const App: React.FC = () => {
   useEffect(() => localStorage.setItem('snippets', JSON.stringify(snippets)), [snippets]);
   useEffect(() => localStorage.setItem('refineHistory', JSON.stringify(refineHistory)), [refineHistory]);
   useEffect(() => localStorage.setItem('uiScale', uiScale.toString()), [uiScale]);
+  
+  useEffect(() => {
+    const BASE_WIDTH = 750;
+    const BASE_HEIGHT = 550;
+    const newWidth = Math.round(BASE_WIDTH * uiScale);
+    const newHeight = Math.round(BASE_HEIGHT * uiScale);
+
+    // Aplica zoom no corpo do documento (eficiente no Chromium)
+    document.body.style.zoom = uiScale.toString();
+
+    // Redimensiona a janela do Electron
+    if (window.electron?.setWindowSize) {
+      window.electron.setWindowSize(newWidth, newHeight);
+    }
+  }, [uiScale]);
+
   useEffect(() => {
     localStorage.setItem('uiPosition', uiPosition);
     if (window.electron?.setWindowPosition) {
@@ -411,9 +428,7 @@ const App: React.FC = () => {
         style={{ 
           WebkitAppRegion: 'drag',
           backgroundColor: `rgba(22, 22, 24, ${bgTransparency})`,
-          backdropBlur: '40px',
-          transform: `scale(${uiScale})`,
-          transformOrigin: 'top center'
+          backdropBlur: '40px'
         } as any}
       >
         

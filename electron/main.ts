@@ -302,7 +302,13 @@ ipcMain.handle('set-window-position', async (event, position: string) => {
       break;
   }
 
-  mainWindow.setPosition(x, y, true);
+  mainWindow?.setPosition(x, y, true);
+});
+
+// IPC para redimensionar a janela
+ipcMain.handle('set-window-size', async (event, width: number, height: number) => {
+  if (!mainWindow) return;
+  mainWindow.setSize(Math.round(width), Math.round(height), true);
 });
 
 // Responde ao IPC Request de Auto-Launch
