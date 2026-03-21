@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, globalShortcut, shell, Tray, Menu, clipboard, dialog } from 'electron';
+import { app, BrowserWindow, ipcMain, globalShortcut, shell, Tray, Menu, clipboard, dialog, screen } from 'electron';
 import * as path from 'path';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { exec } from 'child_process';
@@ -9,9 +9,10 @@ import { autoUpdater } from 'electron-updater';
 const execAsync = promisify(exec);
 
 let isQuitting = false;
+let mainWindow: BrowserWindow | null = null;
 
 function createWindow() {
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 750,
     height: 550,
     icon: path.join(__dirname, '../build/LowWriteIco.ico'),
@@ -37,16 +38,16 @@ function createWindow() {
   }
 
   // Previne a destruição da janela (esconde em vez de fechar)
-  mainWindow.on('close', (event) => {
+  mainWindow?.on('close', (event) => {
     if (!isQuitting) {
       event.preventDefault();
-      mainWindow.hide();
+      mainWindow?.hide();
     }
   });
 
   // Esconde ao clicar fora (efeito Raycast/Spotlight perfeito)
-  mainWindow.on('blur', () => {
-    mainWindow.hide();
+  mainWindow?.on('blur', () => {
+    mainWindow?.hide();
   });
 }
 
@@ -268,6 +269,40 @@ ipcMain.handle('chat-message', async (event, { apiKey, history, newMessage, cust
     console.error('Erro no Chat da API Gemini:', error);
     throw new Error('Falha ao gerar a resposta do chat.');
   }
+});
+
+// IPC para posicionamento da janela
+ipcMain.handle('set-window-position', async (event, position: string) => {
+  if (!mainWindow) return;
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+  const [winWidth, winHeight] = mainWindow.getSize();
+  const padding = 20;
+
+  let x = Math.floor((width - winWidth) / 2);
+  let y = Math.floor((height - winHeight) / 2);
+
+  switch (position) {
+    case 'top-center':
+      y = padding;
+      break;
+    case 'bottom-center':
+      y = height - winHeight - padding;
+      break;
+    case 'top-right':
+      x = width - winWidth - padding;
+      y = padding;
+      break;
+    case 'top-left':
+      x = padding;
+      y = padding;
+      break;
+    case 'center':
+    default:
+      // x, y já estão no centro
+      break;
+  }
+
+  mainWindow.setPosition(x, y, true);
 });
 
 // Responde ao IPC Request de Auto-Launch

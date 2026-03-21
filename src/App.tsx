@@ -27,6 +27,7 @@ declare global {
       onClipboardText: (callback: (text: string) => void) => void;
       setDiscordRPC: (options: any) => Promise<boolean>;
       execSystemCommand: (command: string) => Promise<boolean>;
+      setWindowPosition: (position: string) => Promise<void>;
     };
   }
 }
@@ -102,6 +103,8 @@ const App: React.FC = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [settingsTab, setSettingsTab] = useState<'appearance' | 'ai' | 'snippets' | 'system'>('appearance');
   const [bgTransparency, setBgTransparency] = useState(() => Number(localStorage.getItem('bgTransparency') || '0.8'));
+  const [uiScale, setUiScale] = useState(() => Number(localStorage.getItem('uiScale') || '1'));
+  const [uiPosition, setUiPosition] = useState(() => localStorage.getItem('uiPosition') || 'center');
   
   // Custom Theme Generator
   const customThemeObj: ThemeConfig = {
@@ -186,6 +189,13 @@ const App: React.FC = () => {
   useEffect(() => localStorage.setItem('appTheme', themeId), [themeId]);
   useEffect(() => localStorage.setItem('snippets', JSON.stringify(snippets)), [snippets]);
   useEffect(() => localStorage.setItem('refineHistory', JSON.stringify(refineHistory)), [refineHistory]);
+  useEffect(() => localStorage.setItem('uiScale', uiScale.toString()), [uiScale]);
+  useEffect(() => {
+    localStorage.setItem('uiPosition', uiPosition);
+    if (window.electron?.setWindowPosition) {
+       window.electron.setWindowPosition(uiPosition);
+    }
+  }, [uiPosition]);
 
   useEffect(() => {
     if (window.electron?.getAppVersion) {
@@ -401,7 +411,9 @@ const App: React.FC = () => {
         style={{ 
           WebkitAppRegion: 'drag',
           backgroundColor: `rgba(22, 22, 24, ${bgTransparency})`,
-          backdropBlur: '40px' 
+          backdropBlur: '40px',
+          transform: `scale(${uiScale})`,
+          transformOrigin: 'top center'
         } as any}
       >
         
@@ -691,49 +703,81 @@ const App: React.FC = () => {
             {/* Appearance Section */}
             {settingsTab === 'appearance' && (
               <div className="flex flex-col gap-5 animate-in fade-in slide-in-from-left-2 duration-300">
-                {/* Visual Themes Card */}
-               <div className="flex-1 flex flex-col gap-3 p-5 bg-white/5 rounded-2xl border border-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
-                 <label className="text-[10px] text-gray-400 uppercase tracking-widest font-bold flex items-center gap-2">
-                   <PaintBucket className="w-4 h-4 text-white opacity-80" strokeWidth={2} />
-                   Appearance
-                 </label>
-                 <div className="flex gap-3">
+                {/* Theme Selection */}
+                <div className="flex flex-col gap-3 p-5 bg-white/5 rounded-2xl border border-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+                  <label className="text-[10px] text-gray-400 uppercase tracking-widest font-bold flex items-center gap-2">
+                    <PaintBucket className={`w-4 h-4 ${curTheme.text}`} strokeWidth={2} />
+                    Current Theme
+                  </label>
+                  <div className="grid grid-cols-4 gap-3">
                     {themeOptions.map((t) => (
-                       <button 
-                          key={t.id}
-                          onClick={() => setThemeId(t.id)}
-                          title={t.name}
-                          className={`w-7 h-7 rounded-full border border-white/20 transition-all duration-300 hover:scale-110 active:scale-95 flex items-center justify-center shadow-lg`}
-                          style={{ backgroundColor: t.colorHex, borderColor: themeId === t.id ? 'white' : '' }}
-                       >
-                          {themeId === t.id && <Check className="w-3.5 h-3.5 text-white drop-shadow-md" strokeWidth={3} />}
-                       </button>
+                      <button 
+                        key={t.id} 
+                        onClick={() => setThemeId(t.id)} 
+                        className={`flex flex-col items-center gap-2 p-3 rounded-xl transition-all border-2 ${themeId === t.id ? `${t.border} bg-white/10` : 'border-transparent hover:bg-white/5'}`}
+                      >
+                        <div className="w-8 h-8 rounded-lg shadow-lg" style={{ backgroundColor: t.colorHex }}></div>
+                        <span className="text-[10px] font-medium text-gray-300">{t.name}</span>
+                      </button>
                     ))}
-                    
-                    {/* Custom Theme Picker */}
-                    <div title="Custom Color" className="relative group w-7 h-7 rounded-full border border-white/20 transition-all duration-300 hover:scale-110 flex items-center justify-center shadow-lg"
-                         style={{ backgroundColor: themeId === 'custom' ? customColor : '#333', borderColor: themeId === 'custom' ? 'white' : '' }}
+                    <button 
+                       onClick={() => setThemeId('custom')}
+                       className={`flex flex-col items-center gap-2 p-3 rounded-xl transition-all border-2 ${themeId === 'custom' ? 'border-white/30 bg-white/10' : 'border-transparent hover:bg-white/5'}`}
                     >
-                       <input type="color" className="absolute opacity-0 w-full h-full cursor-pointer" value={customColor} onChange={(e) => { setThemeId('custom'); setCustomColor(e.target.value); }} />
-                       {themeId === 'custom' ? (
-                          <Check className="w-3.5 h-3.5 text-white drop-shadow-md pointer-events-none" strokeWidth={3} />
-                       ) : (
-                          <Edit3 className="w-3 h-3 text-white opacity-60 pointer-events-none" strokeWidth={2} />
-                       )}
-                    </div>
-                 </div>
-               </div>
+                       <div className="w-8 h-8 rounded-lg shadow-lg border border-white/20 relative overflow-hidden" style={{ background: customColor }}>
+                          <input type="color" className="absolute inset-0 opacity-0 cursor-pointer" value={customColor} onChange={(e)=>setCustomColor(e.target.value)} />
+                       </div>
+                       <span className="text-[10px] font-medium text-gray-300">Custom</span>
+                    </button>
+                  </div>
+                </div>
 
-                {/* Background Transparency Card */}
+                {/* Window Transparency */}
                 <div className="flex flex-col gap-3 p-5 bg-white/5 rounded-2xl border border-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
                   <label className="text-[10px] text-gray-400 flex justify-between uppercase tracking-widest font-bold items-center gap-2">
-                    Background Transparency
+                    Opacidade do Fundo
                     <span className={`text-[10px] ${curTheme.text}`}>{Math.round(bgTransparency * 100)}%</span>
                   </label>
                   <input 
                     type="range" min="0.1" max="1" step="0.05" value={bgTransparency} onChange={(e) => setBgTransparency(Number(e.target.value))}
                     className="w-full mt-2 accent-white opacity-80 hover:opacity-100 transition-opacity"
                   />
+                </div>
+
+                {/* UI Scaling */}
+                <div className="flex flex-col gap-3 p-5 bg-white/5 rounded-2xl border border-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+                  <label className="text-[10px] text-gray-400 flex justify-between uppercase tracking-widest font-bold items-center gap-2">
+                    Tamanho da Interface (Zoom)
+                    <span className={`text-[10px] ${curTheme.text}`}>{Math.round(uiScale * 100)}%</span>
+                  </label>
+                  <input 
+                    type="range" min="0.5" max="1.5" step="0.05" value={uiScale} onChange={(e) => setUiScale(Number(e.target.value))}
+                    className="w-full mt-2 accent-white opacity-80 hover:opacity-100 transition-opacity"
+                  />
+                </div>
+
+                {/* Window Position */}
+                <div className="flex flex-col gap-3 p-5 bg-white/5 rounded-2xl border border-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+                  <label className="text-[10px] text-gray-400 uppercase tracking-widest font-bold flex items-center gap-2">
+                    Posição Padrão da Janela
+                  </label>
+                  <div className="grid grid-cols-3 gap-2 mt-1">
+                     {[
+                       { id: 'top-left', label: 'Superior Esq.' },
+                       { id: 'top-center', label: 'Superior Centro' },
+                       { id: 'top-right', label: 'Superior Dir.' },
+                       { id: 'center', label: 'Centro da Tela' },
+                       { id: 'bottom-center', label: 'Inferior Centro' }
+                     ].map(pos => (
+                       <button
+                         key={pos.id}
+                         onClick={() => setUiPosition(pos.id)}
+                         className={`px-3 py-2 rounded-lg text-[10px] font-bold border transition-all ${uiPosition === pos.id ? `${curTheme.border} ${curTheme.text} bg-white/5` : 'border-white/5 text-gray-500 hover:text-gray-300'}`}
+                       >
+                         {pos.label}
+                       </button>
+                     ))}
+                  </div>
                 </div>
               </div>
             )}
