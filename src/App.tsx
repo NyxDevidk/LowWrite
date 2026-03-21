@@ -667,7 +667,7 @@ const App: React.FC = () => {
                    onChange={(e)=>setGeminiApiKey(e.target.value.trim())} 
                    placeholder="AIzaSy..." 
                  />
-                 <p className="text-[10px] text-gray-500 mt-2 ml-1">Your key is stored locally on your machine and sent directly to Google. We do not track or save your keys.</p>\n
+                 <p className="text-[10px] text-gray-500 mt-2 ml-1">Your key is stored locally on your machine and sent directly to Google. We do not track or save your keys.</p>
                  {keyStatus !== 'idle' && (
                    <div className={`mt-3 flex items-center gap-2 px-3 py-2 rounded-lg border text-[11px] font-medium transition-all ${
                      keyStatus === 'checking' ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400' :
