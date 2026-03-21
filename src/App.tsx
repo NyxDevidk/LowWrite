@@ -15,6 +15,8 @@ declare global {
       improveText: (apiKey: string, text: string, tone: string, customInstruction?: string, options?: any) => Promise<string>;
       sendChatMessage: (apiKey: string, history: ChatMessage[], newMessage: string, customInstruction?: string, options?: any) => Promise<string>;
       getAutoLaunch: () => Promise<boolean>;
+      getAppVersion: () => Promise<string>;
+      checkForUpdates: () => Promise<void>;
       setAutoLaunch: (enable: boolean) => Promise<void>;
       searchFiles: (query: string, filter: string) => Promise<any[]>;
       openFile: (path: string) => Promise<void>;
@@ -84,6 +86,7 @@ const App: React.FC = () => {
   const [aiTemp, setAiTemp] = useState(() => Number(localStorage.getItem('aiTemperature') || '0.7'));
   const [autoCopy, setAutoCopy] = useState(() => localStorage.getItem('autoCopy') === 'true');
   const [autoLaunch, setAutoLaunchState] = useState(false);
+  const [appVersion, setAppVersion] = useState('');
   
   // Custom Theme Generator
   const customThemeObj: ThemeConfig = {
@@ -164,6 +167,13 @@ const App: React.FC = () => {
   }, [activeTab, text, chatInput]);
 
   useEffect(() => localStorage.setItem('geminiApiKey', geminiApiKey), [geminiApiKey]);
+
+  useEffect(() => {
+    if (window.electron?.getAppVersion) {
+       window.electron.getAppVersion().then(v => setAppVersion(v)).catch(()=>{});
+    }
+  }, []);
+
 
   useEffect(() => {
     if (!geminiApiKey || geminiApiKey.length < 10) {
@@ -726,6 +736,25 @@ const App: React.FC = () => {
               )}
             </div>
             
+            {/* About & Updates */}
+            <div className={`flex items-center justify-between p-5 bg-white/5 rounded-2xl border ${curTheme.border} shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]`}>
+               <div className="flex items-center gap-4">
+                  <div className={`p-2.5 rounded-xl ${curTheme.bgLight}`}>
+                     <Zap className={`w-5 h-5 ${curTheme.text}`} strokeWidth={2} />
+                  </div>
+                  <div>
+                     <div className="text-white text-sm font-bold">Low Write</div>
+                     <div className="text-gray-400 text-[11px]">Version {appVersion || '1.1.0'}</div>
+                  </div>
+               </div>
+               <button
+                  onClick={() => window.electron?.checkForUpdates?.()}
+                  className={`px-4 py-2 rounded-xl ${curTheme.bgLight} border ${curTheme.border} ${curTheme.text} hover:opacity-80 transition-all text-xs font-bold tracking-wide`}
+               >
+                  Check for Updates
+               </button>
+            </div>
+
             {/* System Actions */}
             <div className="flex items-center justify-between p-5 bg-white/5 rounded-2xl border border-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
                <div className="flex flex-col">

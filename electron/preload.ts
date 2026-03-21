@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld('electron', {
   improveText: (apiKey: string, text: string, tone: string, customInstruction?: string, options?: any) => ipcRenderer.invoke('improve-text', { apiKey, text, tone, customInstruction, options }),
   sendChatMessage: (apiKey: string, history: any[], newMessage: string, customInstruction?: string, options?: any) => ipcRenderer.invoke('chat-message', { apiKey, history, newMessage, customInstruction, options }),
   getAutoLaunch: () => ipcRenderer.invoke('get-auto-launch'),
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  checkForUpdates: () => ipcRenderer.invoke('invoke-check-updates'),
   setAutoLaunch: (enable: boolean) => ipcRenderer.invoke('set-auto-launch', enable),
   searchFiles: (query: string, filter: string) => ipcRenderer.invoke('search-files', { query, filter }),
   openFile: (path: string) => ipcRenderer.invoke('open-file', path),
