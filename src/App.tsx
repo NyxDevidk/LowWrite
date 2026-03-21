@@ -395,7 +395,7 @@ const App: React.FC = () => {
                <Search className={`w-6 h-6 ${curTheme.text} mr-4 opacity-80`} strokeWidth={2} />
                <input
                  ref={searchInputRef}
-                 className="flex-1 bg-transparent text-2xl font-light text-white outline-none placeholder-gray-500/80"
+                 className="flex-1 bg-transparent text-2xl font-light text-white outline-none placeholder-gray-500/80 typing-glow"
                  placeholder="Search for apps, files..."
                  value={searchQuery}
                  onChange={(e) => setSearchQuery(e.target.value)}
@@ -411,6 +411,14 @@ const App: React.FC = () => {
             </div>
             
             <style>{`
+              @keyframes pulsate-glow {
+                0% { box-shadow: 0 0 5px rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+                50% { box-shadow: 0 0 15px rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); }
+                100% { box-shadow: 0 0 5px rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+              }
+              .typing-glow:focus {
+                animation: pulsate-glow 2s infinite ease-in-out;
+              }
               @keyframes progress-indeterminate {
                 0% { left: -35%; width: 35%; }
                 100% { left: 100%; width: 35%; }
