@@ -201,6 +201,25 @@ ipcMain.handle('improve-text', async (event, { apiKey, text, tone, customInstruc
   }
 });
 
+// IPC para comandos do sistema (Lock, Sleep, Restart, Shutdown)
+ipcMain.handle('exec-system-command', async (event, command: string) => {
+  const commands: Record<string, string> = {
+    lock: 'rundll32.exe user32.dll,LockWorkStation',
+    sleep: 'rundll32.exe powrprof.dll,SetSuspendState 0,1,0',
+    restart: 'shutdown /r /t 5',
+    shutdown: 'shutdown /s /t 5',
+  };
+  const cmd = commands[command];
+  if (!cmd) return false;
+  try {
+    await execAsync(cmd);
+    return true;
+  } catch (e) {
+    console.error('System command error:', e);
+    return false;
+  }
+});
+
 // Verifica a validade da API Key
 ipcMain.handle('verify-api-key', async (event, apiKey) => {
   try {

@@ -15,5 +15,6 @@ contextBridge.exposeInMainWorld('electron', {
   searchFiles: (query: string, filter: string) => ipcRenderer.invoke('search-files', { query, filter }),
   openFile: (path: string) => ipcRenderer.invoke('open-file', path),
   showInFolder: (path: string) => ipcRenderer.invoke('show-in-folder', path),
-  setDiscordRPC: (options: any) => ipcRenderer.invoke('set-discord-rpc', options)
+  setDiscordRPC: (options: any) => ipcRenderer.invoke('set-discord-rpc', options),
+  execSystemCommand: (command: string) => ipcRenderer.invoke('exec-system-command', command),
 });

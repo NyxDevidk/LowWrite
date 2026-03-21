@@ -24,6 +24,7 @@ declare global {
       verifyApiKey: (apiKey: string) => Promise<{success: boolean, error?: string}>;
       onClipboardText: (callback: (text: string) => void) => void;
       setDiscordRPC: (options: any) => Promise<boolean>;
+      execSystemCommand: (command: string) => Promise<boolean>;
     };
   }
 }
@@ -87,6 +88,15 @@ const App: React.FC = () => {
   const [autoCopy, setAutoCopy] = useState(() => localStorage.getItem('autoCopy') === 'true');
   const [autoLaunch, setAutoLaunchState] = useState(false);
   const [appVersion, setAppVersion] = useState('');
+  const [snippets, setSnippets] = useState<{trigger: string; expansion: string}[]>(() => {
+    try { return JSON.parse(localStorage.getItem('snippets') || '[]'); } catch { return []; }
+  });
+  const [newSnippetTrigger, setNewSnippetTrigger] = useState('');
+  const [newSnippetExpansion, setNewSnippetExpansion] = useState('');
+  const [refineHistory, setRefineHistory] = useState<{text: string; result: string; date: string}[]>(() => {
+    try { return JSON.parse(localStorage.getItem('refineHistory') || '[]'); } catch { return []; }
+  });
+  const [showHistory, setShowHistory] = useState(false);
   
   // Custom Theme Generator
   const customThemeObj: ThemeConfig = {
@@ -167,6 +177,8 @@ const App: React.FC = () => {
   }, [activeTab, text, chatInput]);
 
   useEffect(() => localStorage.setItem('geminiApiKey', geminiApiKey), [geminiApiKey]);
+  useEffect(() => localStorage.setItem('snippets', JSON.stringify(snippets)), [snippets]);
+  useEffect(() => localStorage.setItem('refineHistory', JSON.stringify(refineHistory)), [refineHistory]);
 
   useEffect(() => {
     if (window.electron?.getAppVersion) {
@@ -462,7 +474,21 @@ const App: React.FC = () => {
                 rows={1}
                 placeholder="What do you want to improve?"
                 value={text}
-                onChange={(e) => setText(e.target.value)}
+                onChange={(e) => {
+                    const val = e.target.value;
+                    // Snippet expansion: check if last word matches a trigger
+                    if (val.endsWith(' ') || val.endsWith('\t')) {
+                      const words = val.trimEnd().split(/\s+/);
+                      const lastWord = words[words.length - 1];
+                      const snippet = snippets.find(s => s.trigger === lastWord);
+                      if (snippet) {
+                        words[words.length - 1] = snippet.expansion;
+                        setText(words.join(' ') + ' ');
+                        return;
+                      }
+                    }
+                    setText(val);
+                  }}
                 onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleImproveText(); } }}
                 onInput={(e) => { const t = e.target as HTMLTextAreaElement; t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 120) + 'px'; }}
               />
@@ -704,6 +730,49 @@ const App: React.FC = () => {
             </div>
 
             
+            {/* Snippets Manager */}
+            <div className="flex flex-col gap-3 p-5 bg-white/5 rounded-2xl border border-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]">
+              <label className="text-[10px] text-gray-400 uppercase tracking-widest font-bold flex items-center gap-2">
+                <Type className="w-4 h-4 text-white opacity-80" strokeWidth={2} />
+                Snippets / Text Shortcuts
+              </label>
+              <p className="text-[10px] text-gray-500 -mt-1">Type a trigger (e.g. <code className="bg-white/10 px-1 rounded">/email</code>) in the Refine box and press Space to expand.</p>
+              <div className="flex flex-col gap-2 max-h-32 overflow-y-auto">
+                {snippets.map((s, i) => (
+                  <div key={i} className="flex items-center gap-2 bg-black/30 rounded-lg px-3 py-2">
+                    <code className={`text-[11px] font-mono ${curTheme.text} shrink-0`}>{s.trigger}</code>
+                    <span className="text-gray-500 text-xs shrink-0">→</span>
+                    <span className="text-gray-300 text-[11px] truncate flex-1">{s.expansion}</span>
+                    <button onClick={() => setSnippets(prev => prev.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-300 text-xs font-bold shrink-0">✕</button>
+                  </div>
+                ))}
+                {snippets.length === 0 && <p className="text-gray-600 text-[11px] ml-1">No snippets yet. Add one below!</p>}
+              </div>
+              <div className="flex gap-2 mt-1">
+                <input
+                  className="w-28 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[12px] font-mono text-white outline-none focus:border-white/30 transition-colors placeholder-gray-600"
+                  placeholder="/trigger"
+                  value={newSnippetTrigger}
+                  onChange={e => setNewSnippetTrigger(e.target.value)}
+                />
+                <input
+                  className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[12px] text-white outline-none focus:border-white/30 transition-colors placeholder-gray-600"
+                  placeholder="Expansion text..."
+                  value={newSnippetExpansion}
+                  onChange={e => setNewSnippetExpansion(e.target.value)}
+                />
+                <button
+                  onClick={() => {
+                    if (!newSnippetTrigger.trim() || !newSnippetExpansion.trim()) return;
+                    setSnippets(prev => [...prev, { trigger: newSnippetTrigger.trim(), expansion: newSnippetExpansion.trim() }]);
+                    setNewSnippetTrigger('');
+                    setNewSnippetExpansion('');
+                  }}
+                  className={`px-4 py-2 rounded-lg ${curTheme.btn} text-white text-xs font-bold hover:opacity-90 transition-all`}
+                >Add</button>
+              </div>
+            </div>
+
             {/* Discord Rich Presence */}
             <div className="flex flex-col gap-3 p-5 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] transition-all">
               <div className="flex justify-between items-center cursor-pointer" onClick={() => setDiscordEnabled(!discordEnabled)}>
