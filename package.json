@@ -1,6 +1,6 @@
 {
   "name": "low-write",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Assistente de escrita com Google Gemini",
   "main": "dist-electron/main.js",
   "scripts": {
@@ -13,12 +13,14 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@types/react-syntax-highlighter": "^15.5.13",
     "discord-rpc": "^4.0.1",
     "electron-updater": "^6.8.3",
     "lucide-react": "^0.577.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-markdown": "^10.1.0",
+    "react-syntax-highlighter": "^16.1.1",
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {

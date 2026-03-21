@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Sparkles, MessageSquare, Settings, Check, Send, Copy, Trash2, Edit3, Type, Zap, Bot, PaintBucket, Search, Folder, AppWindow, FileText, ChevronRight, ExternalLink, Gamepad2, CheckCircle2, XCircle, Loader2, Calculator } from 'lucide-react';
 
 // --- Types & Config ---
@@ -334,10 +336,41 @@ const App: React.FC = () => {
         ul: ({node, ...props}) => <ul className="list-disc pl-5 my-2 space-y-1 text-gray-300 marker:text-gray-500" {...props} />,
         ol: ({node, ...props}) => <ol className="list-decimal pl-5 my-2 space-y-1 text-gray-300 marker:text-gray-500" {...props} />,
         li: ({node, ...props}) => <li className="pl-1" {...props} />,
-        code: ({node, inline, ...props}: any) => 
-          inline 
-            ? <code className={`bg-white/10 px-1.5 py-0.5 rounded-md text-[13px] font-mono ${curTheme.text}`} {...props} />
-            : <pre className="bg-[#101010]/80 p-4 rounded-xl overflow-x-auto my-3 border border-white/5 shadow-inner text-[13px] font-mono text-gray-300" {...props} />,
+        code: ({node, inline, className, children, ...props}: any) => {
+          const match = /language-(\w+)/.exec(className || '');
+          const codeString = String(children).replace(/\n$/, '');
+          return !inline ? (
+            <div className="relative group my-4">
+               <div className="absolute right-3 top-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button 
+                    onClick={() => navigator.clipboard.writeText(codeString)}
+                    className="p-2 bg-white/10 hover:bg-white/20 rounded-lg backdrop-blur-md border border-white/10 text-white transition-all shadow-lg"
+                    title="Copy Code"
+                  >
+                    <Copy className="w-4 h-4" strokeWidth={2} />
+                  </button>
+               </div>
+               <div className="rounded-xl overflow-hidden border border-white/10 shadow-2xl">
+                  <div className="bg-[#1e1e1e] px-4 py-2 border-b border-white/5 flex justify-between items-center">
+                     <span className="text-[10px] font-mono uppercase tracking-tighter text-gray-500">{match ? match[1] : 'code'}</span>
+                  </div>
+                  <SyntaxHighlighter
+                    {...props}
+                    style={vscDarkPlus}
+                    language={match ? match[1] : 'text'}
+                    PreTag="div"
+                    className="!bg-[#101010]/95 !p-4 !m-0 !text-[13px] !font-mono"
+                  >
+                    {codeString}
+                  </SyntaxHighlighter>
+               </div>
+            </div>
+          ) : (
+            <code className={`bg-white/10 px-1.5 py-0.5 rounded-md text-[13px] font-mono ${curTheme.text}`} {...props}>
+               {children}
+            </code>
+          )
+        },
         blockquote: ({node, ...props}) => <blockquote className={`border-l-4 ${curTheme.border} pl-4 py-1 italic text-gray-400 bg-white/5 rounded-r-lg`} {...props} />
       }}
     >

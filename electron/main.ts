@@ -244,9 +244,15 @@ ipcMain.handle('chat-message', async (event, { apiKey, history, newMessage, cust
     // Para Gemini >1.5 podemos passar systemInstruction direto no modelo
     const model = genAI.getGenerativeModel({ 
       model: 'gemini-2.5-flash',
-      systemInstruction: customInstruction && customInstruction.trim() !== '' 
-        ? customInstruction 
-        : "Você é um assistente de IA prestativo e direto integrado a um aplicativo Desktop (Low Write). Retorne suas respostas em Markdown limpo e objetivo.",
+      systemInstruction: (customInstruction && customInstruction.trim() !== '' ? customInstruction + "\n\n" : "") + 
+        "Você é o Assistente do Low Write. Sua principal característica é a formatação impecável em Markdown.\n" +
+        "REGRAS DE FORMATAÇÃO ESTRITAS:\n" +
+        "- SEMPRE use blocos de código com a linguagem correta (ex: ```javascript, ```python, ```bash).\n" +
+        "- Use negrito para dar ênfase a conceitos importantes.\n" +
+        "- Use tabelas ou listas sempre que facilitar a leitura.\n" +
+        "- NUNCA retorne blocos de código sem tag de linguagem.\n" +
+        "- Se o usuário pedir código, explique brevemente o que ele faz.\n" +
+        "- Responda sempre em Português Brasileiro, a menos que solicitado o contrário.",
       generationConfig: {
         temperature: options?.temperature !== undefined ? Number(options.temperature) : 0.7,
       }
